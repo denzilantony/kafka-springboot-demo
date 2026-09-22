@@ -1,18 +1,27 @@
 package com.denzil.kafka;
 
-import com.denzil.kafka.consumer.OrderEventConsumer;
-import com.denzil.kafka.model.OrderEvent;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.mockito.Mockito.verify;
+
+import java.math.BigDecimal;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import java.math.BigDecimal;
-import static org.assertj.core.api.Assertions.assertThatNoException;
+
+import com.denzil.kafka.consumer.OrderEventConsumer;
+import com.denzil.kafka.model.OrderEvent;
+import com.denzil.kafka.service.OrderProcessingService;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Order Event Consumer Tests — TDD")
 class OrderEventConsumerTest {
+	
+	@Mock
+	private OrderProcessingService orderProcessingService;
 
     @InjectMocks
     private OrderEventConsumer orderEventConsumer;
@@ -31,6 +40,7 @@ class OrderEventConsumerTest {
                         "order-events",
                         0,
                         0L));
+        verify(orderProcessingService).processOrderEvent(event);
     }
 
     @Test
@@ -51,6 +61,7 @@ class OrderEventConsumerTest {
                         "order-events",
                         0,
                         1L));
+        verify(orderProcessingService).processOrderEvent(event);
     }
 
     @Test
@@ -71,6 +82,7 @@ class OrderEventConsumerTest {
                         "order-events",
                         0,
                         2L));
+        verify(orderProcessingService).processOrderEvent(event);
     }
 
     @Test
@@ -92,6 +104,7 @@ class OrderEventConsumerTest {
                         "order-events",
                         0,
                         3L));
+        verify(orderProcessingService).processOrderEvent(event);
     }
 
     @Test
@@ -112,6 +125,7 @@ class OrderEventConsumerTest {
                         "order-events",
                         0,
                         4L));
+        verify(orderProcessingService).processOrderEvent(event);
     }
 
     @Test

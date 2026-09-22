@@ -1,7 +1,5 @@
 package com.denzil.kafka.consumer;
 
-import com.denzil.kafka.model.OrderEvent;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.kafka.retrytopic.TopicSuffixingStrategy;
@@ -11,9 +9,18 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Component;
 
+import com.denzil.kafka.model.OrderEvent;
+import com.denzil.kafka.service.OrderProcessingService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class OrderEventConsumer {
+	
+	private final OrderProcessingService orderProcessingService;
 
     @RetryableTopic(
         attempts = "3",
@@ -40,7 +47,7 @@ public class OrderEventConsumer {
                 event.getStatus(),
                 topic, partition, offset);
 
-        processOrderEvent(event);
+        orderProcessingService.processOrderEvent(event);
     }
 
     @KafkaListener(
@@ -56,50 +63,6 @@ public class OrderEventConsumer {
                 event.getOrderId(), topic);
 
         handleFailedEvent(event);
-    }
-
-    private void processOrderEvent(OrderEvent event) {
-        log.info("Processing order event: orderId={}",
-                event.getOrderId());
-
-        switch (event.getStatus()) {
-            case CREATED -> handleCreatedOrder(event);
-            case PROCESSING -> handleProcessingOrder(event);
-            case COMPLETED -> handleCompletedOrder(event);
-            case FAILED -> handleFailedOrder(event);
-            case CANCELLED -> handleCancelledOrder(event);
-            default -> log.warn("Unknown order status: {}",
-                    event.getStatus());
-        }
-    }
-
-    private void handleCreatedOrder(OrderEvent event) {
-        log.info("New order created: orderId={}, " +
-                "customerId={}, amount={}",
-                event.getOrderId(),
-                event.getCustomerId(),
-                event.getTotalAmount());
-    }
-
-    private void handleProcessingOrder(OrderEvent event) {
-        log.info("Order being processed: orderId={}",
-                event.getOrderId());
-    }
-
-    private void handleCompletedOrder(OrderEvent event) {
-        log.info("Order completed successfully: orderId={}",
-                event.getOrderId());
-    }
-
-    private void handleFailedOrder(OrderEvent event) {
-        log.error("Order failed: orderId={}, reason={}",
-                event.getOrderId(),
-                event.getErrorMessage());
-    }
-
-    private void handleCancelledOrder(OrderEvent event) {
-        log.info("Order cancelled: orderId={}",
-                event.getOrderId());
     }
 
     private void handleFailedEvent(OrderEvent event) {
